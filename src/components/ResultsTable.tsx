@@ -1,20 +1,15 @@
-
 import React, { useState } from "react";
-import { Check, X, Download, Copy } from "lucide-react";
+import { Check, X, Download, Copy, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-interface Account {
-  email: string;
-  password: string;
-  isWorking: boolean;
-}
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { AccountCheckResult } from "@/utils/accountChecker";
 
 interface ResultsTableProps {
-  accounts: Account[];
+  accounts: AccountCheckResult[];
   isCheckingComplete: boolean;
 }
 
@@ -57,7 +52,7 @@ export function ResultsTable({ accounts, isCheckingComplete }: ResultsTableProps
     });
   };
 
-  const copyToClipboard = (accounts: Account[]) => {
+  const copyToClipboard = (accounts: AccountCheckResult[]) => {
     if (accounts.length === 0) {
       toast({
         title: "No accounts to copy",
@@ -89,7 +84,7 @@ export function ResultsTable({ accounts, isCheckingComplete }: ResultsTableProps
     );
   };
 
-  const renderAccountList = (accountList: Account[]) => {
+  const renderAccountList = (accountList: AccountCheckResult[]) => {
     if (accountList.length === 0) {
       return (
         <div className="p-8 text-center text-muted-foreground">
@@ -109,20 +104,34 @@ export function ResultsTable({ accounts, isCheckingComplete }: ResultsTableProps
                 index % 2 === 0 ? "bg-background" : "bg-muted/20"
               )}
             >
-              <div className="font-mono text-sm truncate max-w-[80%]">
+              <div className="font-mono text-sm truncate max-w-[70%]">
                 {account.email}:{account.password}
               </div>
-              <div
-                className={cn(
-                  "flex items-center justify-center rounded-full w-6 h-6",
-                  account.isWorking ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+              <div className="flex items-center gap-2">
+                {account.message && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="cursor-help text-muted-foreground">
+                        <Info className="h-4 w-4" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      {account.message}
+                    </TooltipContent>
+                  </Tooltip>
                 )}
-              >
-                {account.isWorking ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <X className="h-4 w-4" />
-                )}
+                <div
+                  className={cn(
+                    "flex items-center justify-center rounded-full w-6 h-6",
+                    account.isWorking ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                  )}
+                >
+                  {account.isWorking ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <X className="h-4 w-4" />
+                  )}
+                </div>
               </div>
             </div>
           ))}

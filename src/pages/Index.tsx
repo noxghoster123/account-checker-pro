@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { FileUpload } from "@/components/FileUpload";
 import { ResultsTable } from "@/components/ResultsTable";
 import { SampleDataGenerator } from "@/components/SampleDataGenerator";
@@ -18,15 +17,23 @@ const Index = () => {
   const [isCheckingComplete, setIsCheckingComplete] = useState(false);
   const { toast } = useToast();
   
-  const handleFileAccepted = (content: string) => {
+  const handleFileAccepted = useCallback((content: string) => {
     setFileContent(content);
     // Reset states when new file is uploaded
     setResults([]);
     setCheckingProgress(0);
     setIsCheckingComplete(false);
-  };
+  }, []);
 
-  const startChecking = async () => {
+  const handleProgress = useCallback((progress: number) => {
+    setCheckingProgress(progress);
+  }, []);
+
+  const handleResult = useCallback((result: AccountCheckResult) => {
+    setResults(prev => [...prev, result]);
+  }, []);
+
+  const startChecking = useCallback(async () => {
     if (!fileContent) {
       toast({
         title: "No file uploaded",
@@ -44,12 +51,8 @@ const Index = () => {
     try {
       await checkAccounts(
         fileContent,
-        (progress) => {
-          setCheckingProgress(progress);
-        },
-        (result) => {
-          setResults((prev) => [...prev, result]);
-        }
+        handleProgress,
+        handleResult
       );
       
       setIsCheckingComplete(true);
@@ -67,7 +70,7 @@ const Index = () => {
     } finally {
       setIsChecking(false);
     }
-  };
+  }, [fileContent, toast, handleProgress, handleResult]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-muted/50">
